@@ -371,22 +371,6 @@ function App() {
       return;
     }
 
-    try {
-      const wsContract = contracts[currentNetwork].wsContract;
-      console.log(
-        "JackPot logs",
-        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
-      );
-      console.log(
-        "TicketRepayment logs",
-        await wsContract.queryFilter(
-          wsContract.filters.TicketRepayment(currentAccount)
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
-
     isPlaynowProcessing = false;
 
     var backgroundInterval = setInterval(() => {
@@ -423,6 +407,22 @@ function App() {
 
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
+
+    try {
+      const wsContract = contracts[currentNetwork].wsContract;
+      console.log(
+        "JackPot logs",
+        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
+      );
+      console.log(
+        "TicketRepayment logs",
+        await wsContract.queryFilter(
+          wsContract.filters.TicketRepayment(currentAccount)
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onNavChanged = (changedNav) => {
