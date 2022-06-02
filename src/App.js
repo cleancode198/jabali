@@ -17,8 +17,8 @@ import {
 import { networks, networkTypes } from "./utils/constants";
 import { ddd, getNetworkType } from "./utils/functions";
 
-import rinkeby from "./settings/UnluckySlug-rinkeby.json";
-import bscTestnet from "./settings/Test-UnluckySlugBSC-bscTestnet.json";
+import rinkeby from "./settings/Client-UnluckySlug-rinkeby.json";
+import bscTestnet from "./settings/Client-UnluckySlugBSC-bscTestnet.json";
 
 const gasLimit = 10000000;
 
@@ -29,8 +29,6 @@ const slugAnimationDuration = 5;
 
 var backgroundAnimationIndex = 0;
 var slugAnimationIndex = 0;
-
-var isPlaynowProcessing = false;
 
 var host = "";
 var referrer = "";
@@ -166,10 +164,14 @@ function App() {
   const TicketRepayment = (to, value, event) => {
     console.log("event-TicketRepayment", { to, value, event });
 
-    let multiplier =
-      ethers.utils.formatEther(value.toBigInt()) /
-      contracts[currentNetwork].ticketCost;
-    setPrize("x" + multiplier);
+    try {
+      let multiplier =
+        ethers.utils.formatEther(value.toBigInt()) /
+        contracts[currentNetwork].ticketCost;
+      setPrize("x" + multiplier);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const DepositNFT = (contractAddress, tokenID, WeiCost, event) => {
@@ -293,27 +295,19 @@ function App() {
   }, [networkType]);
 
   const playnowClicked = async () => {
-    if (isPlaynowProcessing) {
-      console.log("isPlaynowProcessing");
-      return;
-    }
     if (backgroundAnimationIndex > 0 || slugAnimationIndex > 0) {
       console.log({ backgroundAnimationIndex, slugAnimationIndex });
       return;
     }
 
-    isPlaynowProcessing = true;
-
     setCurrentPage("LOTTERY");
 
     if (currentAccount === "") {
-      isPlaynowProcessing = false;
       alert("Please connect wallet!");
       return;
     }
 
     if (currentNetwork === null || contracts[currentNetwork] === undefined) {
-      isPlaynowProcessing = false;
       console.log("currentNetwork is null or undefined", {
         currentNetwork,
         contract: contracts[currentNetwork],
@@ -363,11 +357,8 @@ function App() {
       checkSlimometerMultiplier();
     } catch (error) {
       console.log(error);
-      isPlaynowProcessing = false;
       return;
     }
-
-    isPlaynowProcessing = false;
 
     var backgroundInterval = setInterval(() => {
       if (backgroundAnimationIndex === backgroundImageCount) {

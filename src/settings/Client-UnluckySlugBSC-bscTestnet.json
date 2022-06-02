@@ -1,7 +1,7 @@
 {
-  "address": "0x5A5Be01e823f9320d4a4141D18bBE27B9Ab6E813",
-  "ticketCost": 0.001,
-  "moneySpentRequiredToActivateReferral": 0.01,
+  "address": "0xae705b6054869236445c9aE9396eB4D2f95d971C",
+  "ticketCost": 0.002,
+  "moneySpentRequiredToActivateReferral": 0.1,
   "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/bsc/testnet/ws",
   "abi": [
     {
@@ -234,6 +234,13 @@
       "inputs": [],
       "name": "referrerCommisionPercentage",
       "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "refundHundredThousandTicketProbability",
+      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
       "stateMutability": "view",
       "type": "function"
     },
