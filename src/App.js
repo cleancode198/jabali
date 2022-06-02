@@ -154,6 +154,8 @@ function App() {
     setReferralActivated(moneySpent >= moneySpentRequired);
   };
 
+  const checkNFTs = async () => {};
+
   // contract events
   const JackPot = (to, value, event) => {
     console.log("event-JackPot", { to, value, event });
@@ -181,6 +183,8 @@ function App() {
       WeiCost,
       event,
     });
+
+    checkNFTs();
   };
 
   const WithdrawTopNFT = (player, contractAddress, tokenID, event) => {
@@ -280,6 +284,7 @@ function App() {
       checkReferralActivated(
         contracts[currentNetwork].moneySpentRequiredToActivateReferral
       );
+      checkNFTs();
     } catch (error) {
       console.log(error);
     }

@@ -1,5 +1,6 @@
 {
   "address": "0x3747080a7288Ea9d40e3CFA69c1C5ac9609dF632",
+  "nftContractAddress": "0x18aB4ee8b892CaFC0463Cd7d1E24ba4F69b85123",
   "ticketCost": 0.01,
   "moneySpentRequiredToActivateReferral": 0.1,
   "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/eth/rinkeby/ws",
