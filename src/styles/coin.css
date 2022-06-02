@@ -1,0 +1,9 @@
+.coin {
+  /* position: fixed;
+  right: 19vw;
+  top: 5vh; */
+  width: 10vh;
+  height: 10vh;
+  /* vertical-align: middle; */
+  margin-right: 10px;
+}

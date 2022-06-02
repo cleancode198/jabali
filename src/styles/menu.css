@@ -1,0 +1,14 @@
+.menu-container {
+  position: fixed;
+  left: calc((100vw - 370px) / 2);
+  top: 20vh;
+  width: 370px;
+  text-align: center;
+}
+.menu-item {
+  color: white;
+  font-family: "LIQUIDISMPART2";
+  font-size: 50px;
+  padding: 15px 0;
+  cursor: pointer;
+}

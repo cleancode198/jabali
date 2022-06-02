@@ -1,0 +1,164 @@
+.App {
+  width: 100vw;
+  height: 100vh;
+  /* background-image: url("../public/assets/images/interface_elements/reference_image.jpg"); */
+  /* background-image: url("../public/assets/images/interface_elements/background.png"); */
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+@font-face {
+  font-family: "LIQUIDISMPART2";
+  src: url("../public/assets/fonts/LIQUIDISMPART2.TTF");
+}
+@font-face {
+  font-family: "shlop";
+  src: url("../public/assets/fonts/shlop\ rg.ttf");
+}
+
+.hidden {
+  display: none;
+}
+
+.overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  opacity: 0.8;
+}
+
+.flex {
+  display: flex;
+}
+
+.col-1 {
+  width: 8.3%;
+}
+.col-2 {
+  width: 16.6%;
+}
+.col-3 {
+  width: 25%;
+}
+.col-4 {
+  width: 33.3%;
+}
+.col-5 {
+  width: 41.6%;
+}
+.col-6 {
+  width: 50%;
+}
+.col-7 {
+  width: 58.3%;
+}
+.col-8 {
+  width: 66.6%;
+}
+.col-9 {
+  width: 75%;
+}
+.col-10 {
+  width: 83.3%;
+}
+.col-11 {
+  width: 91.6%;
+}
+.col-12 {
+  width: 100%;
+}
+
+.modal {
+  background: black;
+  opacity: 0.95;
+  padding: 20px;
+  font-family: "LIQUIDISMPART2";
+  overflow: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  border-radius: 7px;
+}
+.modal::-webkit-scrollbar {
+  display: none;
+}
+.modal h2 {
+  color: #e2cb70;
+}
+.modal p {
+  color: white;
+}
+
+.modal-center {
+  position: fixed;
+  left: 15vw;
+  top: 20vh;
+  width: 70vw;
+  height: 50vh;
+}
+@media screen and (max-width: 810px) {
+  .modal-center {
+    position: fixed;
+    left: 2.5vw;
+    top: 20vh;
+    width: 90vw;
+    height: 72.5vh;
+  }
+}
+.modal-slimometer {
+  position: fixed;
+  left: 13vw;
+  bottom: 5vh;
+  width: 23vw;
+  height: 20vh;
+}
+@media screen and (max-width: 1000px) {
+  .modal-slimometer {
+    position: fixed;
+    left: 13vw;
+    bottom: 5vh;
+    width: 20vw;
+    height: 20vh;
+  }
+}
+@media screen and (max-width: 750px) {
+  .modal-slimometer {
+    display: none;
+  }
+}
+
+.play-now-btn {
+  position: fixed;
+  left: 40vw;
+  bottom: 7vh;
+  width: 20vw;
+  height: 10vh;
+}
+
+.ticket-cost {
+  position: fixed;
+  left: 40vw;
+  bottom: 20vh;
+  width: 20vw;
+  height: 9vh;
+  text-align: center;
+  font-family: "LIQUIDISMPART2";
+  color: #e2cb70;
+  font-size: 20px;
+}
+
+.nav-item-selected {
+  color: #bd9e3c !important;
+}
+
+@media screen and (max-width: 750px) {
+  .play-now-btn {
+    position: fixed;
+    left: 35vw;
+    bottom: 7vh;
+    width: 30vw;
+    height: 10vh;
+  }
+}

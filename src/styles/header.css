@@ -1,0 +1,86 @@
+.menu {
+  position: fixed;
+  left: 4vw;
+  top: 4vh;
+  width: 5vw;
+  height: 7vh;
+  background: url(../../public/assets/images/menu.png);
+  background-size: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* z-index: 20; */
+  cursor: pointer;
+  display: none;
+}
+
+.title {
+  position: fixed;
+  left: 37.5vw;
+  top: 4vh;
+  width: 25vw;
+  height: 10vh;
+}
+
+.wallet {
+  position: fixed;
+  right: 2vw;
+  top: 5vh;
+  display: flex;
+}
+.connect-wallet-btn {
+  width: 15.5vw;
+  height: 10vh;
+}
+.slug-friend {
+  color: #e2cb70;
+  font-size: 20px;
+  font-family: "shlop";
+  margin-right: 50px;
+  margin-top: 3vh;
+  cursor: pointer;
+
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+.address {
+  color: #e2cb70;
+  font-size: 20px;
+  font-family: "shlop";
+  margin-top: 3vh;
+
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+@media screen and (max-width: 1070px) {
+  .wallet {
+    display: none;
+  }
+  .title {
+    position: fixed;
+    left: 32.5vw;
+    top: 4vh;
+    width: 35vw;
+    height: 10vh;
+  }
+}
+@media screen and (max-width: 850px) {
+  .title {
+    position: fixed;
+    left: 27.5vw;
+    top: 4vh;
+    width: 45vw;
+    height: 10vh;
+  }
+}
+@media screen and (max-width: 500px) {
+  .title {
+    position: fixed;
+    left: 20vw;
+    top: 4vh;
+    width: 60vw;
+    height: 10vh;
+  }
+}

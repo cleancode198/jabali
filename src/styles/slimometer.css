@@ -1,0 +1,25 @@
+.slimometer {
+  position: fixed;
+  left: 4vw;
+  bottom: 4vh;
+  width: 7vw;
+  height: 24vh;
+
+  cursor: pointer;
+}
+.slimometer img {
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (max-width: 750px) {
+  .slimometer {
+    position: fixed;
+    left: 4vw;
+    bottom: 4vh;
+    width: 10vw;
+    height: 24vh;
+
+    cursor: pointer;
+  }
+}

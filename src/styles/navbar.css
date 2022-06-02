@@ -1,0 +1,22 @@
+.navbar {
+  position: fixed;
+  left: 16vw;
+  top: 7vh;
+}
+@media screen and (max-width: 1285px) {
+  .navbar {
+    display: none;
+  }
+}
+.navbar .nav-item {
+  color: #e2cb70;
+  font-size: 20px;
+  font-family: "LIQUIDISMPART2";
+
+  margin-right: 30px;
+  cursor: pointer;
+
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}

@@ -1,0 +1,15 @@
+.card-flip {
+  position: fixed;
+  left: 30.5vw;
+  top: 15vh;
+  width: 40vw;
+  height: 70vh;
+}
+.prize {
+  position: fixed;
+  left: 39.8vw;
+  top: 21.2vh;
+  width: 20.6vw;
+  height: 57.5vh;
+  border-radius: 20px;
+}

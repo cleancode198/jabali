@@ -1,0 +1,9 @@
+.image-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.image-btn img {
+  width: 100%;
+  height: 100%;
+}

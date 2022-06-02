@@ -1,0 +1,81 @@
+.referral-active {
+  color: #4ad378 !important;
+}
+.referral-inactive {
+  color: #ed3b6a !important;
+}
+
+.referral-sections {
+  display: flex;
+}
+.referral-section {
+  width: 30%;
+  padding-right: 3%;
+  color: white;
+}
+.referral-section-title {
+  color: #bd9e3c !important;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.slug-friend-title {
+  display: flex;
+}
+.slug-friend-title .copy-area {
+  display: flex;
+  font-family: "shlop";
+  margin: 15px 0;
+}
+.copy-area-title {
+  color: white;
+  font-size: 20px;
+}
+.slug-link {
+  display: flex;
+  background-color: #1f1c13;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #71858e;
+  margin-top: -5px;
+  border-radius: 5px;
+}
+.slug-link .slug-link-url {
+  font-family: "LIQUIDISMPART2";
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.copy-btn {
+  text-align: right;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 1290px) {
+  .copy-area-title {
+    /* visibility: hidden; */
+    display: none;
+  }
+  .slug-link {
+    width: 90% !important;
+  }
+}
+@media screen and (max-width: 650px) {
+  .referral-section {
+    width: 97%;
+    padding-bottom: 3%;
+  }
+  .referral-sections {
+    display: block;
+  }
+  .slug-friend-title {
+    display: block;
+  }
+  .slug-friend-title .copy-area {
+    width: 100% !important;
+  }
+  .slug-friend-title h2 {
+    width: 100% !important;
+  }
+}
