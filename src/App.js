@@ -323,26 +323,15 @@ function App() {
 
     setPrize("slug_sad");
 
+    const wsContract = new ethers.Contract(
+      contracts[currentNetwork].address,
+      contracts[currentNetwork].abi,
+      new ethers.providers.WebSocketProvider(
+        contracts[currentNetwork].wsProvider
+      )
+    );
+
     try {
-      const wsContract = new ethers.Contract(
-        contracts[currentNetwork].address,
-        contracts[currentNetwork].abi,
-        new ethers.providers.WebSocketProvider(
-          contracts[currentNetwork].wsProvider
-        )
-      );
-
-      console.log(
-        "JackPot logs",
-        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
-      );
-      console.log(
-        "TicketRepayment logs",
-        await wsContract.queryFilter(
-          wsContract.filters.TicketRepayment(currentAccount)
-        )
-      );
-
       if (networkType === networkTypes.ethereum) {
         wsContract.on("JackPot", JackPot);
         wsContract.on("TicketRepayment", TicketRepayment);
@@ -414,6 +403,21 @@ function App() {
 
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
+
+    try {
+      console.log(
+        "JackPot logs",
+        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
+      );
+      console.log(
+        "TicketRepayment logs",
+        await wsContract.queryFilter(
+          wsContract.filters.TicketRepayment(currentAccount)
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onNavChanged = (changedNav) => {
