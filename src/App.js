@@ -328,8 +328,14 @@ function App() {
   }, [networkType]);
 
   const playnowClicked = async () => {
-    if (isPlaynowProcessing) return;
-    if (backgroundAnimationIndex > 0 || slugAnimationIndex > 0) return;
+    if (isPlaynowProcessing) {
+      console.log("isPlaynowProcessing");
+      return;
+    }
+    if (backgroundAnimationIndex > 0 || slugAnimationIndex > 0) {
+      console.log({ backgroundAnimationIndex, slugAnimationIndex });
+      return;
+    }
 
     isPlaynowProcessing = true;
 
