@@ -40,18 +40,6 @@ var contracts = {}; // contract information object
 contracts[networks.rinkeby] = rinkeby;
 contracts[networks.bscTestnet] = bscTestnet;
 
-for (var x in networks) {
-  let network = networks[x];
-
-  if (contracts[network] !== undefined) {
-    contracts[network].wsContract = new ethers.Contract(
-      contracts[network].address,
-      contracts[network].abi,
-      new ethers.providers.WebSocketProvider(contracts[network].wsProvider)
-    );
-  }
-}
-
 var contract;
 
 function App() {
@@ -268,33 +256,10 @@ function App() {
   useEffect(() => {
     console.log("currentNetwork", currentNetwork);
 
-    const type = getNetworkType(currentNetwork);
-    setNetworkType(type);
+    setNetworkType(getNetworkType(currentNetwork));
 
     if (currentNetwork === null || contracts[currentNetwork] === undefined)
       return;
-
-    try {
-      const wsContract = contracts[currentNetwork].wsContract;
-
-      if (type === networkTypes.ethereum) {
-        wsContract.on("JackPot", JackPot);
-        wsContract.on("TicketRepayment", TicketRepayment);
-        wsContract.on("DepositNFT", DepositNFT);
-        wsContract.on("WithdrawTopNFT", WithdrawTopNFT);
-        wsContract.on("WithdrawMediumNFT", WithdrawMediumNFT);
-        wsContract.on("WithdrawNormalNFT", WithdrawNormalNFT);
-        wsContract.on("GoldenTicket", GoldenTicket);
-      } else if (type === networkTypes.bsc) {
-        wsContract.on("JackPot", JackPot);
-        wsContract.on("TicketRepayment", TicketRepayment);
-
-        const filter = wsContract.filters.JackPot(currentAccount);
-        wsContract.on(filter, JackPot);
-      }
-    } catch (error) {
-      console.log(error);
-    }
 
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -347,13 +312,55 @@ function App() {
       return;
     }
 
-    if (networkType === networkTypes.noneSelected) {
+    if (currentNetwork === null || contracts[currentNetwork] === undefined) {
       isPlaynowProcessing = false;
-      console.log("networkType noneSelected");
+      console.log("currentNetwork is null or undefined", {
+        currentNetwork,
+        contract: contracts[currentNetwork],
+      });
       return;
     }
 
     setPrize("slug_sad");
+
+    try {
+      const wsContract = new ethers.Contract(
+        contracts[currentNetwork].address,
+        contracts[currentNetwork].abi,
+        new ethers.providers.WebSocketProvider(
+          contracts[currentNetwork].wsProvider
+        )
+      );
+
+      console.log(
+        "JackPot logs",
+        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
+      );
+      console.log(
+        "TicketRepayment logs",
+        await wsContract.queryFilter(
+          wsContract.filters.TicketRepayment(currentAccount)
+        )
+      );
+
+      if (networkType === networkTypes.ethereum) {
+        wsContract.on("JackPot", JackPot);
+        wsContract.on("TicketRepayment", TicketRepayment);
+        wsContract.on("DepositNFT", DepositNFT);
+        wsContract.on("WithdrawTopNFT", WithdrawTopNFT);
+        wsContract.on("WithdrawMediumNFT", WithdrawMediumNFT);
+        wsContract.on("WithdrawNormalNFT", WithdrawNormalNFT);
+        wsContract.on("GoldenTicket", GoldenTicket);
+      } else if (networkType === networkTypes.bsc) {
+        wsContract.on("JackPot", JackPot);
+        wsContract.on("TicketRepayment", TicketRepayment);
+
+        const filter = wsContract.filters.JackPot(currentAccount);
+        wsContract.on(filter, JackPot);
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
     try {
       const txn = await contract.enterThrow({
@@ -407,22 +414,6 @@ function App() {
 
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
-
-    try {
-      const wsContract = contracts[currentNetwork].wsContract;
-      console.log(
-        "JackPot logs",
-        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
-      );
-      console.log(
-        "TicketRepayment logs",
-        await wsContract.queryFilter(
-          wsContract.filters.TicketRepayment(currentAccount)
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const onNavChanged = (changedNav) => {
