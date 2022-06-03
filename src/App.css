@@ -33,6 +33,12 @@
 .flex {
   display: flex;
 }
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
 
 .col-1 {
   width: 8.3%;
