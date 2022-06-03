@@ -15,7 +15,7 @@ export function AvailableNfts({ nfts }) {
                 ".png"
               }
             />
-            <img className="nft-card" src="" />
+            {/* <img className="nft-card" src="" /> */}
             <div className="nft-info">
               <span className="left">{nft.tokenId}</span>
               <span className="right">{nft.cost}</span>

@@ -158,7 +158,7 @@ function App() {
     );
   };
 
-  const convertNft = async (nft) => {
+  const convertNft = (nft) => {
     return {
       tokenId: "#" + nft.tokenID.toNumber(),
       cost: Number(ethers.utils.formatEther(nft.weiCost.toBigInt())) + " ETH",
@@ -171,9 +171,6 @@ function App() {
   };
 
   const checkNfts = async () => {
-    if (networkType !== networkTypes.ethereum) return;
-
-    let flag = nfts === [];
     let topNfts = [];
     let mediumNfts = [];
     let normalNfts = [];
@@ -189,7 +186,6 @@ function App() {
       }
       index++;
     }
-    if (flag) setNfts(topNfts);
 
     index = 0;
     while (true) {
@@ -202,7 +198,6 @@ function App() {
       }
       index++;
     }
-    if (flag) setNfts(topNfts.concat(mediumNfts));
 
     index = 0;
     while (true) {
@@ -301,7 +296,6 @@ function App() {
     console.log("referrer", referrer);
 
     checkIfWalletIsConnected();
-    checkNfts();
   }, []);
 
   useEffect(() => {
