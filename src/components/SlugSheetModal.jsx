@@ -1,11 +1,16 @@
 import "../styles/slugsheetmodal.css";
 
-import { AvailableNFT } from "./AvailableNFT";
+import { AvailableNfts } from "./AvailableNfts";
 import { CardsSheet } from "./CardsSheet";
 
 import { networkTypes } from "../utils/constants";
 
-export function SlugSheetModal({ currentTab, onTabChanged, networkType }) {
+export function SlugSheetModal({
+  currentTab,
+  onTabChanged,
+  networkType,
+  nfts,
+}) {
   return (
     <>
       <div className="slugsheet-tabs">
@@ -37,7 +42,7 @@ export function SlugSheetModal({ currentTab, onTabChanged, networkType }) {
         </div>
       </div>
       <div className="slugsheet-overlay"></div>
-      {currentTab === "AVAILABLE_NFTS" && <AvailableNFT />}
+      {currentTab === "AVAILABLE_NFTS" && <AvailableNfts nfts={nfts} />}
       {currentTab === "CARDS_SHEET" && <CardsSheet />}
       <img
         className="slugsheet-image"

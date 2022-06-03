@@ -19,3 +19,9 @@ export const getNetworkType = (network) => {
     return networkTypes.bsc;
   return networkTypes.noneSelected;
 };
+
+export const getCostUnit = (networkType) => {
+  if (networkType === networkTypes.ethereum) return "ETH";
+  if (networkType === networkTypes.bsc) return "BNB";
+  return "";
+};
