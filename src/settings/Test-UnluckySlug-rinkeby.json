@@ -2,7 +2,7 @@
   "address": "0x250950B0d8E2db1e7AAEcb55aAC3D38590C54B85",
   "ticketCost": 0.005,
   "moneySpentRequiredToActivateReferral": 0.01,
-  "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/bsc/testnet/ws",
+  "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/eth/rinkeby/ws",
   "abi": [
     {
       "inputs": [

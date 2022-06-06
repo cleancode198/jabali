@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import "../styles/cardflip.css";
 
@@ -6,20 +6,32 @@ import { ddd } from "../utils/functions";
 
 var flipCardAnimationIndex = 0;
 var flipCardAnimationTimesIndex = 0;
+var flipCardInterval;
 
-export function CardFlip({ prize, playnowProcessing, onNavChanged }) {
+export function CardFlip({
+  prize,
+  cardFlipStep,
+  onNavChanged,
+  setCardFlipStep,
+}) {
   const [flipCardImageUrl, setFlipCardImageUrl] = useState(
     process.env.PUBLIC_URL +
       "/assets/images/Card_flip/card_flip_1.1001 copy.png"
   );
-  const [cardFlipStep, setCardFlipStep] = useState("FLIPPING");
+
+  useEffect(() => {
+    if (cardFlipStep === "PRIZE") {
+      flipCardAnimationIndex = 0;
+      flipCardAnimationTimesIndex = 0;
+      if (flipCardInterval) clearInterval(flipCardInterval);
+    }
+  }, [cardFlipStep]);
 
   const flipCardImageCount = 120;
   const flipCardAnimationDuration = 5;
   const flipCardAnimationTimes = (2 * 60) / flipCardAnimationDuration;
 
   const flipCard = () => {
-    if (flipCardAnimationIndex > 0 || flipCardAnimationTimesIndex > 0) return;
     if (cardFlipStep === "PRIZE") {
       if (prize === "legendary" || prize === "epic" || prize === "rare") {
         setCardFlipStep("NFT");
@@ -35,15 +47,11 @@ export function CardFlip({ prize, playnowProcessing, onNavChanged }) {
       return;
     }
 
-    var flipCardInterval = setInterval(() => {
-      if (
-        !playnowProcessing ||
-        flipCardAnimationTimesIndex === flipCardAnimationTimes
-      ) {
-        flipCardAnimationIndex = 0;
-        flipCardAnimationTimesIndex = 0;
+    if (flipCardAnimationIndex > 0 || flipCardAnimationTimesIndex > 0) return;
+
+    flipCardInterval = setInterval(() => {
+      if (flipCardAnimationTimesIndex === flipCardAnimationTimes) {
         setCardFlipStep("PRIZE");
-        clearInterval(flipCardInterval);
         return;
       }
       if (flipCardAnimationIndex === flipCardImageCount) {

@@ -18,7 +18,7 @@ import {
 import { networks, networkTypes, openseaUrls } from "./utils/constants";
 import { ddd, getCostUnit, getNetworkType } from "./utils/functions";
 
-import rinkeby from "./settings/Test-UnluckySlug-rinkeby.json";
+import rinkeby from "./settings/Client-UnluckySlug-rinkeby.json";
 import bscTestnet from "./settings/Client-UnluckySlugBSC-bscTestnet.json";
 
 const gasLimit = 10000000;
@@ -40,7 +40,6 @@ contracts[networks.rinkeby] = rinkeby;
 contracts[networks.bscTestnet] = bscTestnet;
 
 var contract;
-var wsContract;
 var nftOwners = [];
 
 function App() {
@@ -66,7 +65,7 @@ function App() {
     process.env.PUBLIC_URL +
       "/assets/images/Slug_animated/idle_v02/slug_animation_1.0001 copy.png"
   );
-  const [playnowProcessing, setPlaynowProcessing] = useState(false);
+  const [cardFlipStep, setCardFlipStep] = useState("NOT_STARTED");
 
   const Web3Api = useMoralisWeb3Api();
 
@@ -79,13 +78,15 @@ function App() {
     } else {
       host = temp;
     }
-    console.log("host", host);
-    console.log("referrer", referrer);
+    // console.log("host", host);
+    // console.log("referrer", referrer);
 
     checkIfWalletIsConnected();
   }, []);
 
   useEffect(() => {
+    // console.log("currentAccount + currentNetwork");
+
     if (currentNetwork === null || contracts[currentNetwork] === undefined)
       return;
 
@@ -99,23 +100,23 @@ function App() {
       );
 
       if (referrer !== "") {
-        contract.setReferrer(referrer, {
-          value: 0,
-          gasLimit,
+        contract.referralToReferrer(currentAccount).then((data) => {
+          console.log("referrer", data);
+          if (data === "0x0000000000000000000000000000000000000000") {
+            contract.setReferrer(referrer, {
+              value: 0,
+              gasLimit,
+            });
+          }
         });
       }
 
       contract.ticketCost().then((data) => {
         let amount = Number(ethers.utils.formatEther(data.toBigInt()));
-        console.log("ticketCost", { data, amount });
+        // console.log("ticketCost", { data, amount });
         setTicketCost(amount);
       });
-      contract.jackPotBalance().then((data) => {
-        let amount = Number(ethers.utils.formatEther(data.toBigInt()));
-        console.log("jackPotBalance", { data, amount });
-        setJackPotBalance(amount);
-      });
-
+      checkJackPotBalance();
       checkSlimometerMultiplier();
       checkReferralActivated();
       if (getNetworkType(currentNetwork) === networkTypes.ethereum) {
@@ -127,6 +128,8 @@ function App() {
   }, [currentAccount, currentNetwork]);
 
   useEffect(() => {
+    // console.log("currentAccount", currentAccount);
+
     setSlugLink(host + currentAccount);
 
     if (!currentAccount) {
@@ -139,7 +142,10 @@ function App() {
   }, [currentAccount]);
 
   useEffect(() => {
-    setNetworkType(getNetworkType(currentNetwork));
+    // console.log("currentNetwork", currentNetwork);
+
+    let tNetworkType = getNetworkType(currentNetwork);
+    setNetworkType(tNetworkType);
   }, [currentNetwork]);
 
   useEffect(() => {
@@ -169,7 +175,7 @@ function App() {
 
       if (accounts.length !== 0) {
         const account = accounts[0];
-        console.log("Found an authorized account:", account);
+        // console.log("Found an authorized account:", account);
         setCurrentAccount(account);
 
         let chainId = ethereum.networkVersion;
@@ -207,7 +213,7 @@ function App() {
       const { ethereum } = window;
 
       if (!ethereum) {
-        alert("Get MetaMask!");
+        // alert("Get MetaMask!");
         return;
       }
 
@@ -219,10 +225,18 @@ function App() {
     }
   };
 
+  const checkJackPotBalance = () => {
+    contract.jackPotBalance().then((data) => {
+      let amount = Number(ethers.utils.formatEther(data.toBigInt()));
+      // console.log("jackPotBalance", { data, amount });
+      setJackPotBalance(amount);
+    });
+  };
+
   const checkSlimometerMultiplier = () => {
     contract.unluckyThrows(currentAccount).then((data) => {
       let unluckyThrows = data.toNumber();
-      console.log("unluckyThrows", { data, unluckyThrows });
+      // console.log("unluckyThrows", { data, unluckyThrows });
 
       if (unluckyThrows < 5) {
         setSlimometerMultiplier(1);
@@ -237,7 +251,7 @@ function App() {
   const checkReferralActivated = () => {
     contract.moneySpent(currentAccount).then((data) => {
       let moneySpent = ethers.utils.formatEther(data.toBigInt());
-      console.log("moneySpent", { data, moneySpent });
+      // console.log("moneySpent", { data, moneySpent });
 
       setReferralActivated(
         moneySpent >=
@@ -281,7 +295,7 @@ function App() {
           };
           let tNftOwners = await Web3Api.token.getNFTOwners(options);
           tNftOwners = tNftOwners.result;
-          console.log("getNFTOwners", tNftOwners);
+          // console.log("getNFTOwners", tNftOwners);
           nftOwners = nftOwners.concat(tNftOwners);
           for (i = 0; i < tNftOwners.length; i++) {
             if (
@@ -309,22 +323,16 @@ function App() {
   };
 
   const checkNfts = async () => {
-    console.log("checkNfts");
     let tNfts = nfts;
 
-    try {
-      var sumWeiCostTopNFTs = await contract.sumWeiCostTopNFTs();
-      var averageWeiCostTopNFTs = await contract.averageWeiCostTopNFTs();
-      var index,
-        length =
-          averageWeiCostTopNFTs === 0
-            ? 0
-            : sumWeiCostTopNFTs / averageWeiCostTopNFTs;
-    } catch (error) {
-      console.log(error);
-    }
+    let sumWeiCostTopNFTs = await contract.sumWeiCostTopNFTs();
+    let averageWeiCostTopNFTs = await contract.averageWeiCostTopNFTs();
+    let index,
+      length =
+        averageWeiCostTopNFTs === 0
+          ? 0
+          : sumWeiCostTopNFTs / averageWeiCostTopNFTs;
     for (index = 0; index < length; index++) {
-      console.log("test1", index);
       let nft = await contract.topNFTs(index);
       if (indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1) {
         let image = await getNftImage(nft);
@@ -332,7 +340,6 @@ function App() {
         setNfts(tNfts.concat(nft));
         tNfts.push(nft);
       }
-      console.log("test2", nft);
     }
 
     let sumWeiCostMediumNFTs = await contract.sumWeiCostMediumNFTs();
@@ -373,18 +380,17 @@ function App() {
     console.log("event-JackPot", { to, value, event });
 
     setPrize("slugpot");
-    setPlaynowProcessing(false);
+    setCardFlipStep("PRIZE");
+    checkJackPotBalance();
   };
 
   const TicketRepayment = (to, value, event) => {
     console.log("event-TicketRepayment", { to, value, event });
 
-    try {
+    if (ticketCost > 0) {
       let multiplier = ethers.utils.formatEther(value.toBigInt()) / ticketCost;
       setPrize("x" + multiplier);
-      setPlaynowProcessing(false);
-    } catch (error) {
-      console.log(error);
+      setCardFlipStep("PRIZE");
     }
   };
 
@@ -397,7 +403,7 @@ function App() {
     });
 
     setPrize("legendary");
-    setPlaynowProcessing(false);
+    setCardFlipStep("PRIZE");
   };
 
   const WithdrawMediumNFT = (player, contractAddress, tokenID, event) => {
@@ -409,7 +415,7 @@ function App() {
     });
 
     setPrize("epic");
-    setPlaynowProcessing(false);
+    setCardFlipStep("PRIZE");
   };
 
   const WithdrawNormalNFT = (player, contractAddress, tokenID, event) => {
@@ -421,14 +427,14 @@ function App() {
     });
 
     setPrize("rare");
-    setPlaynowProcessing(false);
+    setCardFlipStep("PRIZE");
   };
 
   const GoldenTicket = (player, tokenID, event) => {
     console.log("event-GoldenTicket", { player, tokenID, event });
 
     setPrize("goldenslug");
-    setPlaynowProcessing(false);
+    setCardFlipStep("PRIZE");
   };
 
   // click functions
@@ -439,7 +445,7 @@ function App() {
     }
 
     if (currentAccount === "") {
-      alert("Please connect wallet!");
+      // alert("Please connect wallet!");
       return;
     }
 
@@ -453,12 +459,12 @@ function App() {
 
     setPrize("slug_sad");
     setCurrentPage("LOTTERY");
-    setPlaynowProcessing(true);
 
     var backgroundInterval = setInterval(() => {
       if (backgroundAnimationIndex === backgroundImageCount) {
         backgroundAnimationIndex = 0;
         setCurrentPage("CARD_FLIP");
+        setCardFlipStep("FLIPPING");
         clearInterval(backgroundInterval);
         return;
       }
@@ -490,49 +496,37 @@ function App() {
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
 
-    try {
-      wsContract = new ethers.Contract(
-        contracts[currentNetwork].address,
-        contracts[currentNetwork].abi,
-        new ethers.providers.WebSocketProvider(
-          contracts[currentNetwork].wsProvider
-        )
-      );
+    const wsContract = new ethers.Contract(
+      contracts[currentNetwork].address,
+      contracts[currentNetwork].abi,
+      new ethers.providers.WebSocketProvider(
+        contracts[currentNetwork].wsProvider
+      )
+    );
 
-      if (networkType === networkTypes.ethereum) {
-        wsContract.on(
-          wsContract.filters.WithdrawTopNFT(currentAccount),
-          WithdrawTopNFT
-        );
-        wsContract.on(
-          wsContract.filters.WithdrawMediumNFT(currentAccount),
-          WithdrawMediumNFT
-        );
-        wsContract.on(
-          wsContract.filters.WithdrawNormalNFT(currentAccount),
-          WithdrawNormalNFT
-        );
-        wsContract.on(
-          wsContract.filters.GoldenTicket(currentAccount),
-          GoldenTicket
-        );
-
-        wsContract.on("WithdrawTopNFT", WithdrawTopNFT);
-        wsContract.on("WithdrawMediumNFT", WithdrawMediumNFT);
-        wsContract.on("WithdrawNormalNFT", WithdrawNormalNFT);
-        wsContract.on("GoldenTicket", GoldenTicket);
-      }
-      wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
+    if (networkType === networkTypes.ethereum) {
       wsContract.on(
-        wsContract.filters.TicketRepayment(currentAccount),
-        TicketRepayment
+        wsContract.filters.WithdrawTopNFT(currentAccount),
+        WithdrawTopNFT
       );
-
-      wsContract.on("JackPot", JackPot);
-      wsContract.on("TicketRepayment", TicketRepayment);
-    } catch (error) {
-      console.log(error);
+      wsContract.on(
+        wsContract.filters.WithdrawMediumNFT(currentAccount),
+        WithdrawMediumNFT
+      );
+      wsContract.on(
+        wsContract.filters.WithdrawNormalNFT(currentAccount),
+        WithdrawNormalNFT
+      );
+      wsContract.on(
+        wsContract.filters.GoldenTicket(currentAccount),
+        GoldenTicket
+      );
     }
+    wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
+    wsContract.on(
+      wsContract.filters.TicketRepayment(currentAccount),
+      TicketRepayment
+    );
 
     try {
       const txn = await contract.enterThrow({
@@ -547,28 +541,6 @@ function App() {
     }
 
     checkSlimometerMultiplier();
-
-    try {
-      console.log("wsContract", wsContract);
-      console.log(
-        "JackPot logs",
-        await wsContract.queryFilter(wsContract.filters.JackPot(currentAccount))
-      );
-      console.log(
-        "TicketRepayment logs",
-        await wsContract.queryFilter(
-          wsContract.filters.TicketRepayment(currentAccount)
-        )
-      );
-
-      console.log("JackPot logs", await wsContract.queryFilter("JackPot"));
-      console.log(
-        "TicketRepayment logs",
-        await wsContract.queryFilter("TicketRepayment")
-      );
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const onNavChanged = (changedNav) => {
@@ -622,8 +594,9 @@ function App() {
       {currentPage === "CARD_FLIP" && (
         <CardFlip
           prize={prize}
-          playnowProcessing={playnowProcessing}
+          cardFlipStep={cardFlipStep}
           onNavChanged={onNavChanged}
+          setCardFlipStep={setCardFlipStep}
         />
       )}
       {currentPage === "ROADMAP" && <Roadmap />}
