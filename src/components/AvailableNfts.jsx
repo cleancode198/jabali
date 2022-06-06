@@ -1,6 +1,8 @@
 import "../styles/availablenfts.css";
 
 export function AvailableNfts({ nfts }) {
+  console.log("nfts", nfts);
+
   return (
     <div className="available-nfts">
       {nfts.map((nft, index) => {
@@ -15,9 +17,9 @@ export function AvailableNfts({ nfts }) {
                 ".png"
               }
             />
-            {/* <img className="nft-card" src="" /> */}
+            <img className="nft-card" src={nft.image ? nft.image : ""} />
             <div className="nft-info">
-              <span className="left">{nft.tokenId}</span>
+              <span className="left">{"#" + nft.tokenId}</span>
               <span className="right">{nft.cost}</span>
             </div>
             <a className="view-on-opensea" href={nft.url} target="_blank"></a>

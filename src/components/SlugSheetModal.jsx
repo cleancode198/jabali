@@ -7,9 +7,9 @@ import { networkTypes } from "../utils/constants";
 
 export function SlugSheetModal({
   currentTab,
-  onTabChanged,
   networkType,
   nfts,
+  onTabChanged,
 }) {
   return (
     <>

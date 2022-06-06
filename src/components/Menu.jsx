@@ -1,6 +1,6 @@
 import "../styles/menu.css";
 
-export function Menu({ onNavChanged, connectWallet, currentAccount }) {
+export function Menu({ currentAccount, onNavChanged, connectWallet }) {
   return (
     <>
       <div

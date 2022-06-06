@@ -1,5 +1,5 @@
 {
-  "address": "0x7fc88CF5CF424173016dE588353Aa4c6B21690e3",
+  "address": "0x452240f87EeFFc8138Ab54865d95366E8AC755f4",
   "ticketCost": 0.005,
   "moneySpentRequiredToActivateReferral": 0.01,
   "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/bsc/testnet/ws",

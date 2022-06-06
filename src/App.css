@@ -147,12 +147,27 @@
   position: fixed;
   left: 40vw;
   bottom: 20vh;
+}
+.jackpot-balance {
+  position: fixed;
+  left: 40vw;
+  top: 26vh;
+}
+.ticket-cost,
+.jackpot-balance {
   width: 20vw;
   height: 9vh;
   text-align: center;
   font-family: "LIQUIDISMPART2";
   color: #e2cb70;
   font-size: 20px;
+}
+@media screen and (max-width: 500px) {
+  .ticket-cost,
+  .jackpot-balance {
+    left: 30vw;
+    width: 40vw;
+  }
 }
 
 .nav-item-selected {

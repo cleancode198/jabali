@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { useMoralisWeb3Api } from "react-moralis";
 
 import "./App.css";
 
@@ -39,18 +40,20 @@ contracts[networks.rinkeby] = rinkeby;
 contracts[networks.bscTestnet] = bscTestnet;
 
 var contract;
+var nftOwners = [];
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [networkType, setNetworkType] = useState(-1);
 
+  const [ticketCost, setTicketCost] = useState(0);
+  const [jackPotBalance, setJackPotBalance] = useState(0);
   const [slimometerMultiplier, setSlimometerMultiplier] = useState(1);
-  const [referralActivated, setReferralActivated] = useState(false);
-  const [prize, setPrize] = useState("slug_sad");
-  const [nfts, setNfts] = useState([]);
-
   const [slugLink, setSlugLink] = useState("");
+  const [referralActivated, setReferralActivated] = useState(false);
+  const [nfts, setNfts] = useState([]);
+  const [prize, setPrize] = useState("slug_sad");
 
   const [currentPage, setCurrentPage] = useState("LOTTERY");
   const [currentTab, setCurrentTab] = useState("CARDS_SHEET");
@@ -62,6 +65,90 @@ function App() {
     process.env.PUBLIC_URL +
       "/assets/images/Slug_animated/idle_v02/slug_animation_1.0001 copy.png"
   );
+  const [playnowProcessing, setPlaynowProcessing] = useState(false);
+
+  const Web3Api = useMoralisWeb3Api();
+
+  useEffect(() => {
+    let temp = window.location.href;
+    let index = temp.indexOf("0x");
+    if (index >= 0) {
+      host = temp.substr(0, index);
+      referrer = temp.substr(index, 42);
+    } else {
+      host = temp;
+    }
+    console.log("host", host);
+    console.log("referrer", referrer);
+
+    checkIfWalletIsConnected();
+  }, []);
+
+  useEffect(() => {
+    if (currentNetwork === null || contracts[currentNetwork] === undefined)
+      return;
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      contract = new ethers.Contract(
+        contracts[currentNetwork].address,
+        contracts[currentNetwork].abi,
+        signer
+      );
+
+      if (referrer !== "") {
+        contract.setReferrer(referrer, {
+          value: 0,
+          gasLimit,
+        });
+      }
+
+      contract.ticketCost().then((data) => {
+        let amount = Number(ethers.utils.formatEther(data.toBigInt()));
+        console.log("ticketCost", { data, amount });
+        setTicketCost(amount);
+      });
+      contract.jackPotBalance().then((data) => {
+        let amount = Number(ethers.utils.formatEther(data.toBigInt()));
+        console.log("jackPotBalance", { data, amount });
+        setJackPotBalance(amount);
+      });
+
+      checkSlimometerMultiplier();
+      checkReferralActivated();
+      if (getNetworkType(currentNetwork) === networkTypes.ethereum) {
+        checkNfts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [currentAccount, currentNetwork]);
+
+  useEffect(() => {
+    setSlugLink(host + currentAccount);
+
+    if (!currentAccount) {
+      setCurrentNetwork(null);
+      setSlimometerMultiplier(1);
+    } else {
+      let chainId = window.ethereum.networkVersion;
+      setCurrentNetwork(chainId === null ? null : parseInt(chainId));
+    }
+  }, [currentAccount]);
+
+  useEffect(() => {
+    setNetworkType(getNetworkType(currentNetwork));
+  }, [currentNetwork]);
+
+  useEffect(() => {
+    if (
+      networkType !== networkTypes.ethereum &&
+      currentTab === "AVAILABLE_NFTS"
+    ) {
+      setCurrentTab("CARDS_SHEET");
+    }
+  }, [networkType]);
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -71,7 +158,7 @@ function App() {
         console.log("Make sure you have metamask!");
         return;
       } else {
-        console.log("We have the ethereum object", ethereum);
+        // console.log("We have the ethereum object", ethereum);
       }
 
       /*
@@ -131,36 +218,37 @@ function App() {
     }
   };
 
-  const checkSlimometerMultiplier = async () => {
-    let unluckyThrows = await contract.unluckyThrows(currentAccount);
-    console.log("unluckyThrows", unluckyThrows);
-    unluckyThrows = unluckyThrows.toNumber();
-    console.log("unluckyThrows", unluckyThrows);
+  const checkSlimometerMultiplier = () => {
+    contract.unluckyThrows(currentAccount).then((data) => {
+      let unluckyThrows = data.toNumber();
+      console.log("unluckyThrows", { data, unluckyThrows });
 
-    if (unluckyThrows < 5) {
-      setSlimometerMultiplier(1);
-    } else if (unluckyThrows < 20) {
-      setSlimometerMultiplier(2);
-    } else {
-      setSlimometerMultiplier(3);
-    }
+      if (unluckyThrows < 5) {
+        setSlimometerMultiplier(1);
+      } else if (unluckyThrows < 20) {
+        setSlimometerMultiplier(2);
+      } else {
+        setSlimometerMultiplier(3);
+      }
+    });
   };
 
-  const checkReferralActivated = async () => {
-    let moneySpent = await contract.moneySpent(currentAccount);
-    console.log("moneySpent", moneySpent);
-    moneySpent = ethers.utils.formatEther(moneySpent.toBigInt());
-    console.log("moneySpent", moneySpent);
+  const checkReferralActivated = () => {
+    contract.moneySpent(currentAccount).then((data) => {
+      let moneySpent = ethers.utils.formatEther(data.toBigInt());
+      console.log("moneySpent", { data, moneySpent });
 
-    setReferralActivated(
-      moneySpent >=
-        contracts[currentNetwork].moneySpentRequiredToActivateReferral
-    );
+      setReferralActivated(
+        moneySpent >=
+          contracts[currentNetwork].moneySpentRequiredToActivateReferral
+      );
+    });
   };
 
   const convertNft = (nft) => {
     return {
-      tokenId: "#" + nft.tokenID.toNumber(),
+      address: nft.contractAddress,
+      tokenId: nft.tokenID.toNumber(),
       cost: Number(ethers.utils.formatEther(nft.weiCost.toBigInt())) + " ETH",
       url:
         openseaUrls[currentNetwork] +
@@ -170,17 +258,68 @@ function App() {
     };
   };
 
+  const getNftImage = async (nft) => {
+    let image = null;
+    if (currentNetwork === networks.rinkeby) {
+      let i,
+        metadata = null;
+      for (i = 0; i < nftOwners.length; i++) {
+        if (
+          nftOwners[i].token_address === nft.contractAddress.toLowerCase() &&
+          nftOwners[i].token_id === "" + nft.tokenID.toNumber()
+        ) {
+          metadata = nftOwners[i].metadata;
+          break;
+        }
+      }
+      if (i === nftOwners.length) {
+        const options = {
+          address: nft.contractAddress,
+          chain: "rinkeby",
+        };
+        let tNftOwners = await Web3Api.token.getNFTOwners(options);
+        tNftOwners = tNftOwners.result;
+        console.log("getNFTOwners", tNftOwners);
+        nftOwners = nftOwners.concat(tNftOwners);
+        for (i = 0; i < tNftOwners.length; i++) {
+          if (
+            tNftOwners[i].token_address === nft.contractAddress &&
+            tNftOwners[i].token_id === "" + nft.tokenID.toNumber()
+          ) {
+            metadata = tNftOwners[i].metadata;
+          }
+        }
+      }
+      image = metadata ? JSON.parse(metadata).image : null;
+    }
+    console.log("image", image);
+    return image;
+  };
+
+  const indexOf = (nfts, address, tokenId) => {
+    for (let i = 0; i < nfts.length; i++) {
+      if (nfts[i].address === address && nfts[i].tokenId === tokenId) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
   const checkNfts = async () => {
-    let topNfts = [];
-    let mediumNfts = [];
-    let normalNfts = [];
+    let tNfts = nfts;
 
     let index = 0;
     while (true) {
       try {
         let nft = await contract.topNFTs(index);
-        nft = convertNft(nft);
-        topNfts.push({ type: "legendary", ...nft });
+        if (
+          indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1
+        ) {
+          let image = await getNftImage(nft);
+          nft = { type: "legendary", image, ...convertNft(nft) };
+          setNfts(tNfts.concat(nft));
+          tNfts.push(nft);
+        }
       } catch (error) {
         break;
       }
@@ -191,8 +330,14 @@ function App() {
     while (true) {
       try {
         let nft = await contract.mediumNFTs(index);
-        nft = convertNft(nft);
-        mediumNfts.push({ type: "epic", ...nft });
+        if (
+          indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1
+        ) {
+          let image = await getNftImage(nft);
+          nft = { type: "epic", image, ...convertNft(nft) };
+          setNfts(tNfts.concat(nft));
+          tNfts.push(nft);
+        }
       } catch (error) {
         break;
       }
@@ -203,14 +348,19 @@ function App() {
     while (true) {
       try {
         let nft = await contract.normalNFTs(index);
-        nft = convertNft(nft);
-        normalNfts.push({ type: "rare", ...nft });
+        if (
+          indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1
+        ) {
+          let image = await getNftImage(nft);
+          nft = { type: "rare", image, ...convertNft(nft) };
+          setNfts(tNfts.concat(nft));
+          tNfts.push(nft);
+        }
       } catch (error) {
         break;
       }
       index++;
     }
-    setNfts(topNfts.concat(mediumNfts, normalNfts));
   };
 
   // contract events
@@ -218,30 +368,19 @@ function App() {
     console.log("event-JackPot", { to, value, event });
 
     setPrize("slugpot");
+    setPlaynowProcessing(false);
   };
 
   const TicketRepayment = (to, value, event) => {
     console.log("event-TicketRepayment", { to, value, event });
 
     try {
-      let multiplier =
-        ethers.utils.formatEther(value.toBigInt()) /
-        contracts[currentNetwork].ticketCost;
+      let multiplier = ethers.utils.formatEther(value.toBigInt()) / ticketCost;
       setPrize("x" + multiplier);
+      setPlaynowProcessing(false);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const DepositNFT = (contractAddress, tokenID, WeiCost, event) => {
-    console.log("event-DepositNFT", {
-      contractAddress,
-      tokenID,
-      WeiCost,
-      event,
-    });
-
-    checkNfts();
   };
 
   const WithdrawTopNFT = (player, contractAddress, tokenID, event) => {
@@ -253,6 +392,7 @@ function App() {
     });
 
     setPrize("legendary");
+    setPlaynowProcessing(false);
   };
 
   const WithdrawMediumNFT = (player, contractAddress, tokenID, event) => {
@@ -264,6 +404,7 @@ function App() {
     });
 
     setPrize("epic");
+    setPlaynowProcessing(false);
   };
 
   const WithdrawNormalNFT = (player, contractAddress, tokenID, event) => {
@@ -275,95 +416,22 @@ function App() {
     });
 
     setPrize("rare");
+    setPlaynowProcessing(false);
   };
 
   const GoldenTicket = (player, tokenID, event) => {
     console.log("event-GoldenTicket", { player, tokenID, event });
 
     setPrize("goldenslug");
+    setPlaynowProcessing(false);
   };
 
-  useEffect(() => {
-    let temp = window.location.href;
-    let index = temp.indexOf("0x");
-    if (index >= 0) {
-      host = temp.substr(0, index);
-      referrer = temp.substr(index, 42);
-    } else {
-      host = temp;
-    }
-    console.log("host", host);
-    console.log("referrer", referrer);
-
-    checkIfWalletIsConnected();
-  }, []);
-
-  useEffect(() => {
-    console.log("currentAccount", currentAccount);
-
-    setSlugLink(host + currentAccount);
-
-    if (currentAccount === "") {
-      setCurrentNetwork(null);
-      setSlimometerMultiplier(1);
-    } else {
-      let chainId = window.ethereum.networkVersion;
-      setCurrentNetwork(chainId !== null ? parseInt(chainId) : chainId);
-
-      if (contract !== undefined) {
-        checkSlimometerMultiplier();
-      }
-    }
-  }, [currentAccount]);
-
-  useEffect(() => {
-    console.log("currentNetwork", currentNetwork);
-
-    let type = getNetworkType(currentNetwork);
-    setNetworkType(type);
-
-    if (currentNetwork === null || contracts[currentNetwork] === undefined)
-      return;
-
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      contract = new ethers.Contract(
-        contracts[currentNetwork].address,
-        contracts[currentNetwork].abi,
-        signer
-      );
-
-      if (referrer !== "") {
-        contract.setReferrer(referrer);
-      }
-
-      checkSlimometerMultiplier();
-      checkReferralActivated();
-      if (type === networkTypes.ethereum) {
-        checkNfts();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [currentNetwork]);
-
-  useEffect(() => {
-    if (
-      networkType !== networkTypes.ethereum &&
-      currentTab === "AVAILABLE_NFTS"
-    ) {
-      setCurrentTab("CARDS_SHEET");
-    }
-  }, [networkType]);
-
+  // click functions
   const playnowClicked = async () => {
     if (backgroundAnimationIndex > 0 || slugAnimationIndex > 0) {
       console.log({ backgroundAnimationIndex, slugAnimationIndex });
       return;
     }
-
-    setCurrentPage("LOTTERY");
 
     if (currentAccount === "") {
       alert("Please connect wallet!");
@@ -379,55 +447,14 @@ function App() {
     }
 
     setPrize("slug_sad");
-
-    const wsContract = new ethers.Contract(
-      contracts[currentNetwork].address,
-      contracts[currentNetwork].abi,
-      new ethers.providers.WebSocketProvider(
-        contracts[currentNetwork].wsProvider
-      )
-    );
-
-    try {
-      if (networkType === networkTypes.ethereum) {
-        wsContract.on("JackPot", JackPot);
-        wsContract.on("TicketRepayment", TicketRepayment);
-        wsContract.on("DepositNFT", DepositNFT);
-        wsContract.on("WithdrawTopNFT", WithdrawTopNFT);
-        wsContract.on("WithdrawMediumNFT", WithdrawMediumNFT);
-        wsContract.on("WithdrawNormalNFT", WithdrawNormalNFT);
-        wsContract.on("GoldenTicket", GoldenTicket);
-      } else if (networkType === networkTypes.bsc) {
-        wsContract.on("JackPot", JackPot);
-        wsContract.on("TicketRepayment", TicketRepayment);
-
-        const filter = wsContract.filters.JackPot(currentAccount);
-        wsContract.on(filter, JackPot);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-
-    try {
-      const txn = await contract.enterThrow({
-        value: ethers.utils.parseEther(
-          "" + contracts[currentNetwork].ticketCost
-        ),
-        gasLimit,
-      });
-      await txn.wait();
-
-      checkSlimometerMultiplier();
-    } catch (error) {
-      console.log(error);
-      return;
-    }
+    setCurrentPage("LOTTERY");
+    setPlaynowProcessing(true);
 
     var backgroundInterval = setInterval(() => {
       if (backgroundAnimationIndex === backgroundImageCount) {
         backgroundAnimationIndex = 0;
-        clearInterval(backgroundInterval);
         setCurrentPage("CARD_FLIP");
+        clearInterval(backgroundInterval);
         return;
       }
 
@@ -457,6 +484,65 @@ function App() {
 
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
+
+    const wsContract = new ethers.Contract(
+      contracts[currentNetwork].address,
+      contracts[currentNetwork].abi,
+      new ethers.providers.WebSocketProvider(
+        contracts[currentNetwork].wsProvider
+      )
+    );
+
+    try {
+      console.log("events-currentAccount", currentAccount);
+      if (networkType === networkTypes.ethereum) {
+        wsContract.on(
+          wsContract.filters.WithdrawTopNFT(currentAccount),
+          WithdrawTopNFT
+        );
+        wsContract.on(
+          wsContract.filters.WithdrawMediumNFT(currentAccount),
+          WithdrawMediumNFT
+        );
+        wsContract.on(
+          wsContract.filters.WithdrawNormalNFT(currentAccount),
+          WithdrawNormalNFT
+        );
+        wsContract.on(
+          wsContract.filters.GoldenTicket(currentAccount),
+          GoldenTicket
+        );
+
+        wsContract.on("WithdrawTopNFT", WithdrawTopNFT);
+        wsContract.on("WithdrawMediumNFT", WithdrawMediumNFT);
+        wsContract.on("WithdrawNormalNFT", WithdrawNormalNFT);
+        wsContract.on("GoldenTicket", GoldenTicket);
+      }
+      wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
+      wsContract.on(
+        wsContract.filters.TicketRepayment(currentAccount),
+        TicketRepayment
+      );
+
+      wsContract.on("JackPot", JackPot);
+      wsContract.on("TicketRepayment", TicketRepayment);
+    } catch (error) {
+      console.log(error);
+    }
+
+    try {
+      const txn = await contract.enterThrow({
+        value: ethers.utils.parseEther("" + ticketCost),
+        gasLimit,
+      });
+      await txn.wait();
+    } catch (error) {
+      console.log(error);
+      setCurrentPage("LOTTERY");
+      return;
+    }
+
+    checkSlimometerMultiplier();
 
     try {
       console.log(
@@ -494,11 +580,11 @@ function App() {
         onNavChanged={onNavChanged}
       />
       <Header
-        onNavChanged={onNavChanged}
-        connectWallet={connectWallet}
         currentAccount={currentAccount}
         networkType={networkType}
         currentPage={currentPage}
+        onNavChanged={onNavChanged}
+        connectWallet={connectWallet}
       />
       <Slimometer
         slimometerMultiplier={slimometerMultiplier}
@@ -506,28 +592,28 @@ function App() {
       />
       <ImageButton
         className="play-now-btn"
-        onClicked={playnowClicked}
         imgUrl={
           process.env.PUBLIC_URL +
           "/assets/images/interface_elements/playnow.png"
         }
+        onClicked={playnowClicked}
       />
-      {currentNetwork !== null && networkType === networkTypes.ethereum && (
-        <div className="ticket-cost">
-          {contracts[currentNetwork].ticketCost +
-            " " +
-            getCostUnit(networkType)}
-        </div>
-      )}
-      {currentNetwork !== null && networkType === networkTypes.bsc && (
-        <div className="ticket-cost">
-          {contracts[currentNetwork].ticketCost +
-            " " +
-            getCostUnit(networkType)}
-        </div>
+      {currentNetwork !== null && (
+        <>
+          <div className="ticket-cost">
+            {ticketCost + " " + getCostUnit(networkType)}
+          </div>
+          <div className="jackpot-balance">
+            {jackPotBalance + " " + getCostUnit(networkType)}
+          </div>
+        </>
       )}
       {currentPage === "CARD_FLIP" && (
-        <CardFlip prize={prize} onNavChanged={onNavChanged} />
+        <CardFlip
+          prize={prize}
+          playnowProcessing={playnowProcessing}
+          onNavChanged={onNavChanged}
+        />
       )}
       {currentPage === "ROADMAP" && <Roadmap />}
       {currentPage === "FAQS" && <Faqs />}
@@ -538,16 +624,16 @@ function App() {
       {currentPage === "SLUG_SHEET" && (
         <SlugSheetModal
           currentTab={currentTab}
-          onTabChanged={onTabChanged}
           networkType={networkType}
           nfts={nfts}
+          onTabChanged={onTabChanged}
         />
       )}
       {currentPage === "MENU" && (
         <Menu
+          currentAccount={currentAccount}
           onNavChanged={onNavChanged}
           connectWallet={connectWallet}
-          currentAccount={currentAccount}
         />
       )}
     </div>

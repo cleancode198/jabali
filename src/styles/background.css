@@ -6,3 +6,22 @@
   width: 100vw;
   height: 100vh;
 }
+
+@media screen and (max-width: 1000px) {
+  .background {
+    width: 150vw;
+    left: -25vw;
+  }
+}
+@media screen and (max-width: 600px) {
+  .background {
+    width: 200vw;
+    left: -50vw;
+  }
+}
+@media screen and (max-width: 470px) {
+  .background {
+    width: 300vw;
+    left: -100vw;
+  }
+}

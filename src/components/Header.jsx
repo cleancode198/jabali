@@ -6,11 +6,11 @@ import { Coin } from "./Coin";
 import { ImageButton } from "./ImageButton";
 
 export function Header({
-  onNavChanged,
-  connectWallet,
   currentAccount,
   networkType,
   currentPage,
+  onNavChanged,
+  connectWallet,
 }) {
   return (
     <div>

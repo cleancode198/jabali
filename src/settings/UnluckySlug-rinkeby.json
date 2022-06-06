@@ -1,5 +1,5 @@
 {
-  "address": "0xd8c90F6A7Ab764941CeE9FeFF1c690738f6d731a",
+  "address": "0x8A88B0d788D70407367718e565D0312C7a7167b1",
   "ticketCost": 0.05,
   "moneySpentRequiredToActivateReferral": 0.1,
   "wsProvider": "wss://speedy-nodes-nyc.moralis.io/82f1e26c112cfbf424425020/eth/rinkeby/ws",
