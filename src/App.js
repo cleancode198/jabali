@@ -496,37 +496,41 @@ function App() {
       slugAnimationIndex++;
     }, (slugAnimationDuration * 1000.0) / slugImageCount);
 
-    const wsContract = new ethers.Contract(
-      contracts[currentNetwork].address,
-      contracts[currentNetwork].abi,
-      new ethers.providers.WebSocketProvider(
-        contracts[currentNetwork].wsProvider
-      )
-    );
+    try {
+      const wsContract = new ethers.Contract(
+        contracts[currentNetwork].address,
+        contracts[currentNetwork].abi,
+        new ethers.providers.WebSocketProvider(
+          contracts[currentNetwork].wsProvider
+        )
+      );
 
-    if (networkType === networkTypes.ethereum) {
+      if (networkType === networkTypes.ethereum) {
+        wsContract.on(
+          wsContract.filters.WithdrawTopNFT(currentAccount),
+          WithdrawTopNFT
+        );
+        wsContract.on(
+          wsContract.filters.WithdrawMediumNFT(currentAccount),
+          WithdrawMediumNFT
+        );
+        wsContract.on(
+          wsContract.filters.WithdrawNormalNFT(currentAccount),
+          WithdrawNormalNFT
+        );
+        wsContract.on(
+          wsContract.filters.GoldenTicket(currentAccount),
+          GoldenTicket
+        );
+      }
+      wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
       wsContract.on(
-        wsContract.filters.WithdrawTopNFT(currentAccount),
-        WithdrawTopNFT
+        wsContract.filters.TicketRepayment(currentAccount),
+        TicketRepayment
       );
-      wsContract.on(
-        wsContract.filters.WithdrawMediumNFT(currentAccount),
-        WithdrawMediumNFT
-      );
-      wsContract.on(
-        wsContract.filters.WithdrawNormalNFT(currentAccount),
-        WithdrawNormalNFT
-      );
-      wsContract.on(
-        wsContract.filters.GoldenTicket(currentAccount),
-        GoldenTicket
-      );
+    } catch (error) {
+      console.log(error);
     }
-    wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
-    wsContract.on(
-      wsContract.filters.TicketRepayment(currentAccount),
-      TicketRepayment
-    );
 
     try {
       const txn = await contract.enterThrow({
