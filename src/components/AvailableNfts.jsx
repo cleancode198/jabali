@@ -1,8 +1,6 @@
 import "../styles/availablenfts.css";
 
 export function AvailableNfts({ nfts }) {
-  console.log("nfts", nfts);
-
   return (
     <div className="available-nfts">
       {nfts.map((nft, index) => {

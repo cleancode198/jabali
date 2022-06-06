@@ -19,10 +19,6 @@ export function CardFlip({ prize, playnowProcessing, onNavChanged }) {
   const flipCardAnimationTimes = (2 * 60) / flipCardAnimationDuration;
 
   const flipCard = () => {
-    console.log("flipCard", {
-      flipCardAnimationTimesIndex,
-      flipCardAnimationIndex,
-    });
     if (flipCardAnimationIndex > 0 || flipCardAnimationTimesIndex > 0) return;
     if (cardFlipStep === "PRIZE") {
       if (prize === "legendary" || prize === "epic" || prize === "rare") {
