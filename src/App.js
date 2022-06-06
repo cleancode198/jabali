@@ -505,6 +505,11 @@ function App() {
         )
       );
 
+      wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
+      wsContract.on(
+        wsContract.filters.TicketRepayment(currentAccount),
+        TicketRepayment
+      );
       if (networkType === networkTypes.ethereum) {
         wsContract.on(
           wsContract.filters.WithdrawTopNFT(currentAccount),
@@ -523,11 +528,6 @@ function App() {
           GoldenTicket
         );
       }
-      wsContract.on(wsContract.filters.JackPot(currentAccount), JackPot);
-      wsContract.on(
-        wsContract.filters.TicketRepayment(currentAccount),
-        TicketRepayment
-      );
     } catch (error) {
       console.log(error);
     }
