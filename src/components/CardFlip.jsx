@@ -11,6 +11,7 @@ var flipCardInterval;
 export function CardFlip({
   prize,
   cardFlipStep,
+  nftImage,
   onNavChanged,
   setCardFlipStep,
 }) {
@@ -92,6 +93,9 @@ export function CardFlip({
           }
           onClick={flipCard}
         />
+      )}
+      {cardFlipStep === "NFT" && (
+        <img className="prize" src={nftImage} onClick={flipCard} />
       )}
     </>
   );

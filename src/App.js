@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { useMoralisWeb3Api } from "react-moralis";
+import axios from "axios";
 
 import "./App.css";
 
@@ -18,8 +18,10 @@ import {
 import { networks, networkTypes, openseaUrls } from "./utils/constants";
 import { ddd, getCostUnit, getNetworkType } from "./utils/functions";
 
-import rinkeby from "./settings/Client-UnluckySlug-rinkeby.json";
+import rinkeby from "./settings/Test-UnluckySlug-rinkeby.json";
 import bscTestnet from "./settings/Client-UnluckySlugBSC-bscTestnet.json";
+
+import erc721Abi from "./settings/ERC721abi.json";
 
 const gasLimit = 10000000;
 
@@ -40,7 +42,6 @@ contracts[networks.rinkeby] = rinkeby;
 contracts[networks.bscTestnet] = bscTestnet;
 
 var contract;
-var nftOwners = [];
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -66,8 +67,7 @@ function App() {
       "/assets/images/Slug_animated/idle_v02/slug_animation_1.0001 copy.png"
   );
   const [cardFlipStep, setCardFlipStep] = useState("NOT_STARTED");
-
-  const Web3Api = useMoralisWeb3Api();
+  const [nftImage, setNftImage] = useState("");
 
   useEffect(() => {
     let temp = window.location.href;
@@ -195,9 +195,9 @@ function App() {
       });
       ethereum.on("chainChanged", function (chainId) {
         try {
-          console.log("chainChanged", chainId);
+          // console.log("chainChanged", chainId);
           chainId = parseInt(chainId, 16);
-          console.log("chainChanged", chainId);
+          // console.log("chainChanged", chainId);
           setCurrentNetwork(chainId);
         } catch (error) {
           console.log(error);
@@ -261,55 +261,34 @@ function App() {
   };
 
   const convertNft = (nft) => {
+    let address = nft.contractAddress;
+    let tokenId = nft.tokenID.toNumber();
+    let cost = Number(ethers.utils.formatEther(nft.weiCost.toBigInt()));
+
+    let url = "";
+    if (openseaUrls[currentNetwork]) {
+      url = openseaUrls[currentNetwork] + address + "/" + tokenId;
+    }
+
     return {
-      address: nft.contractAddress,
-      tokenId: nft.tokenID.toNumber(),
-      cost: Number(ethers.utils.formatEther(nft.weiCost.toBigInt())) + " ETH",
-      url:
-        openseaUrls[currentNetwork] +
-        nft.contractAddress +
-        "/" +
-        nft.tokenID.toNumber(),
+      address,
+      tokenId,
+      cost,
+      url,
     };
   };
 
-  const getNftImage = async (nft) => {
+  const getNftImage = async (address, tokenId) => {
     let image = null;
     try {
-      if (currentNetwork === networks.rinkeby) {
-        let i,
-          metadata = null;
-        for (i = 0; i < nftOwners.length; i++) {
-          if (
-            nftOwners[i].token_address === nft.contractAddress.toLowerCase() &&
-            nftOwners[i].token_id === "" + nft.tokenID.toNumber()
-          ) {
-            metadata = nftOwners[i].metadata;
-            break;
-          }
-        }
-        if (i === nftOwners.length) {
-          const options = {
-            address: nft.contractAddress,
-            chain: "rinkeby",
-          };
-          let tNftOwners = await Web3Api.token.getNFTOwners(options);
-          tNftOwners = tNftOwners.result;
-          // console.log("getNFTOwners", tNftOwners);
-          nftOwners = nftOwners.concat(tNftOwners);
-          for (i = 0; i < tNftOwners.length; i++) {
-            if (
-              tNftOwners[i].token_address === nft.contractAddress &&
-              tNftOwners[i].token_id === "" + nft.tokenID.toNumber()
-            ) {
-              metadata = tNftOwners[i].metadata;
-            }
-          }
-        }
-        image = metadata ? JSON.parse(metadata).image : null;
-      }
-    } catch (error) {}
-    // console.log("image", image);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const nftContract = new ethers.Contract(address, erc721Abi, provider);
+
+      const tokenURI = await nftContract.tokenURI(tokenId);
+      image = (await axios.get(tokenURI)).data.image;
+    } catch (error) {
+      // console.log(error);
+    }
     return image;
   };
 
@@ -334,9 +313,10 @@ function App() {
           : sumWeiCostTopNFTs / averageWeiCostTopNFTs;
     for (index = 0; index < length; index++) {
       let nft = await contract.topNFTs(index);
-      if (indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1) {
-        let image = await getNftImage(nft);
-        nft = { type: "legendary", image, ...convertNft(nft) };
+      nft = convertNft(nft);
+      if (indexOf(tNfts, nft.address, nft.tokenId) === -1) {
+        let image = await getNftImage(nft.address, nft.tokenId);
+        nft = { type: "legendary", image, ...nft };
         setNfts(tNfts.concat(nft));
         tNfts.push(nft);
       }
@@ -350,9 +330,10 @@ function App() {
         : sumWeiCostMediumNFTs / averageWeiCostMediumNFTs;
     for (index = 0; index < length; index++) {
       let nft = await contract.mediumNFTs(index);
-      if (indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1) {
-        let image = await getNftImage(nft);
-        nft = { type: "epic", image, ...convertNft(nft) };
+      nft = convertNft(nft);
+      if (indexOf(tNfts, nft.address, nft.tokenId) === -1) {
+        let image = await getNftImage(nft.address, nft.tokenId);
+        nft = { type: "epic", image, ...nft };
         setNfts(tNfts.concat(nft));
         tNfts.push(nft);
       }
@@ -366,9 +347,10 @@ function App() {
         : sumWeiCostNormalNFTs / averageWeiCostNormalNFTs;
     for (index = 0; index < length; index++) {
       let nft = await contract.normalNFTs(index);
-      if (indexOf(tNfts, nft.contractAddress, nft.tokenID.toNumber()) === -1) {
-        let image = await getNftImage(nft);
-        nft = { type: "rare", image, ...convertNft(nft) };
+      nft = convertNft(nft);
+      if (indexOf(tNfts, nft.address, nft.tokenId) === -1) {
+        let image = await getNftImage(nft.address, nft.tokenId);
+        nft = { type: "rare", image, ...nft };
         setNfts(tNfts.concat(nft));
         tNfts.push(nft);
       }
@@ -377,7 +359,7 @@ function App() {
 
   // contract events
   const JackPot = (to, value, event) => {
-    console.log("event-JackPot", { to, value, event });
+    // console.log("event-JackPot", { to, value, event });
 
     setPrize("slugpot");
     setCardFlipStep("PRIZE");
@@ -385,7 +367,7 @@ function App() {
   };
 
   const TicketRepayment = (to, value, event) => {
-    console.log("event-TicketRepayment", { to, value, event });
+    // console.log("event-TicketRepayment", { to, value, event });
 
     if (ticketCost > 0) {
       let multiplier = ethers.utils.formatEther(value.toBigInt()) / ticketCost;
@@ -395,43 +377,58 @@ function App() {
   };
 
   const WithdrawTopNFT = (player, contractAddress, tokenID, event) => {
-    console.log("event-WithdrawTopNFT", {
-      player,
-      contractAddress,
-      tokenID,
-      event,
-    });
+    // console.log("event-WithdrawTopNFT", {
+    //   player,
+    //   contractAddress,
+    //   tokenID,
+    //   event,
+    // });
 
+    let index = indexOf(nfts, contractAddress, tokenID);
+    if (index >= 0) {
+      setNftImage(nfts[index].image);
+      setNfts(nfts.slice(0, index).concat(nfts.slice(index + 1)));
+    }
     setPrize("legendary");
     setCardFlipStep("PRIZE");
   };
 
   const WithdrawMediumNFT = (player, contractAddress, tokenID, event) => {
-    console.log("event-WithdrawMediumNFT", {
-      player,
-      contractAddress,
-      tokenID,
-      event,
-    });
+    // console.log("event-WithdrawMediumNFT", {
+    //   player,
+    //   contractAddress,
+    //   tokenID,
+    //   event,
+    // });
 
+    let index = indexOf(nfts, contractAddress, tokenID);
+    if (index >= 0) {
+      setNftImage(nfts[index].image);
+      setNfts(nfts.slice(0, index).concat(nfts.slice(index + 1)));
+    }
     setPrize("epic");
     setCardFlipStep("PRIZE");
   };
 
   const WithdrawNormalNFT = (player, contractAddress, tokenID, event) => {
-    console.log("event-WithdrawNormalNFT", {
-      player,
-      contractAddress,
-      tokenID,
-      event,
-    });
+    // console.log("event-WithdrawNormalNFT", {
+    //   player,
+    //   contractAddress,
+    //   tokenID,
+    //   event,
+    // });
 
+    let index = indexOf(nfts, contractAddress, tokenID);
+    if (index >= 0) {
+      setNftImage(nfts[index].image);
+      setNfts(nfts.slice(0, index).concat(nfts.slice(index + 1)));
+    }
     setPrize("rare");
     setCardFlipStep("PRIZE");
   };
 
   const GoldenTicket = (player, tokenID, event) => {
-    console.log("event-GoldenTicket", { player, tokenID, event });
+    // console.log("event-GoldenTicket", { player, tokenID, event });
 
     setPrize("goldenslug");
     setCardFlipStep("PRIZE");
@@ -458,6 +455,7 @@ function App() {
     }
 
     setPrize("slug_sad");
+    setNftImage("");
     setCurrentPage("LOTTERY");
 
     var backgroundInterval = setInterval(() => {
@@ -599,6 +597,7 @@ function App() {
         <CardFlip
           prize={prize}
           cardFlipStep={cardFlipStep}
+          nftImage={nftImage}
           onNavChanged={onNavChanged}
           setCardFlipStep={setCardFlipStep}
         />

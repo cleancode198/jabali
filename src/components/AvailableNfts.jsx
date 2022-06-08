@@ -18,7 +18,7 @@ export function AvailableNfts({ nfts }) {
             <img className="nft-card" src={nft.image ? nft.image : ""} />
             <div className="nft-info">
               <span className="left">{"#" + nft.tokenId}</span>
-              <span className="right">{nft.cost}</span>
+              <span className="right">{nft.cost + " ETH"}</span>
             </div>
             <a className="view-on-opensea" href={nft.url} target="_blank"></a>
           </div>
