@@ -99,7 +99,7 @@ function App() {
         signer
       );
 
-      if (referrer !== "") {
+      if (referrer !== "" && referrer !== currentAccount) {
         contract.referralToReferrer(currentAccount).then((data) => {
           console.log("referrer", data);
           if (data === "0x0000000000000000000000000000000000000000") {
@@ -447,10 +447,15 @@ function App() {
     }
 
     if (currentNetwork === null || contracts[currentNetwork] === undefined) {
-      console.log("currentNetwork is null or undefined", {
+      console.log("currentNetwork is null or contract undefined", {
         currentNetwork,
         contract: contracts[currentNetwork],
       });
+      return;
+    }
+
+    if (ticketCost === 0) {
+      console.log("ticketCost is 0");
       return;
     }
 
@@ -538,8 +543,8 @@ function App() {
       await txn.wait();
     } catch (error) {
       console.log(error);
-      setCardFlipStep("END");
       setCurrentPage("LOTTERY");
+      setCardFlipStep("END");
       return;
     }
 
@@ -595,15 +600,14 @@ function App() {
           </div>
         </>
       )}
-      {currentPage === "CARD_FLIP" && (
-        <CardFlip
-          prize={prize}
-          cardFlipStep={cardFlipStep}
-          nftImage={nftImage}
-          onNavChanged={onNavChanged}
-          setCardFlipStep={setCardFlipStep}
-        />
-      )}
+      <CardFlip
+        currentPage={currentPage}
+        prize={prize}
+        cardFlipStep={cardFlipStep}
+        nftImage={nftImage}
+        onNavChanged={onNavChanged}
+        setCardFlipStep={setCardFlipStep}
+      />
       {currentPage === "ROADMAP" && <Roadmap />}
       {currentPage === "FAQS" && <Faqs />}
       {currentPage === "SLIMOMETER" && <SlimometerModal />}

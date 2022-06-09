@@ -9,6 +9,7 @@ var flipCardAnimationTimesIndex = 0;
 var flipCardInterval;
 
 export function CardFlip({
+  currentPage,
   prize,
   cardFlipStep,
   nftImage,
@@ -26,6 +27,10 @@ export function CardFlip({
       flipCardAnimationIndex = 0;
       flipCardAnimationTimesIndex = 0;
       if (flipCardInterval) clearInterval(flipCardInterval);
+      setFlipCardImageUrl(
+        process.env.PUBLIC_URL +
+          "/assets/images/Card_flip/card_flip_1.1001 copy.png"
+      );
     }
   }, [cardFlipStep]);
 
@@ -76,7 +81,7 @@ export function CardFlip({
   };
 
   return (
-    <>
+    <div className={currentPage === "CARD_FLIP" ? "" : "hidden"}>
       <div id="overlay" className="overlay" onClick={flipCard}></div>
       {cardFlipStep === "FLIPPING" ? (
         <img className="card-flip" src={flipCardImageUrl} onClick={flipCard} />
@@ -102,6 +107,6 @@ export function CardFlip({
       {cardFlipStep === "NFT" && (
         <img className="prize" src={nftImage} onClick={flipCard} />
       )}
-    </>
+    </div>
   );
 }
