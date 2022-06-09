@@ -18,8 +18,8 @@ import {
 import { networks, networkTypes, openseaUrls } from "./utils/constants";
 import { ddd, getCostUnit, getNetworkType } from "./utils/functions";
 
-import rinkeby from "./settings/Test-UnluckySlug-rinkeby.json";
-import bscTestnet from "./settings/Client-UnluckySlugBSC-bscTestnet.json";
+import rinkeby from "./settings/UnluckySlug-rinkeby.json";
+import bscTestnet from "./settings/UnluckySlugBSC-bscTestnet.json";
 
 import erc721Abi from "./settings/ERC721abi.json";
 
@@ -363,7 +363,7 @@ function App() {
 
     setPrize("slugpot");
     setCardFlipStep("PRIZE");
-    checkJackPotBalance();
+    setJackPotBalance(0);
   };
 
   const TicketRepayment = (to, value, event) => {
@@ -538,10 +538,12 @@ function App() {
       await txn.wait();
     } catch (error) {
       console.log(error);
+      setCardFlipStep("END");
       setCurrentPage("LOTTERY");
       return;
     }
 
+    checkJackPotBalance();
     checkSlimometerMultiplier();
   };
 

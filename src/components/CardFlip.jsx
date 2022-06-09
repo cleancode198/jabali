@@ -21,7 +21,8 @@ export function CardFlip({
   );
 
   useEffect(() => {
-    if (cardFlipStep === "PRIZE") {
+    console.log("cardFlipStep", cardFlipStep);
+    if (cardFlipStep === "PRIZE" || cardFlipStep === "END") {
       flipCardAnimationIndex = 0;
       flipCardAnimationTimesIndex = 0;
       if (flipCardInterval) clearInterval(flipCardInterval);
@@ -48,6 +49,10 @@ export function CardFlip({
       return;
     }
 
+    console.log("flipCard", {
+      flipCardAnimationIndex,
+      flipCardAnimationTimesIndex,
+    });
     if (flipCardAnimationIndex > 0 || flipCardAnimationTimesIndex > 0) return;
 
     flipCardInterval = setInterval(() => {
