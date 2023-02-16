@@ -22,7 +22,7 @@ An automated lottery that gives away NFTs of different categories depending on t
 
 Please leave a ⭐ if you like it.
 
-![Game Preview](./jabali.png)
+![Game Preview](./jabali.jpg)
 
 ## Try It Out
 You can get testnet BNB [here](https://testnet.binance.org/faucet-smart).
